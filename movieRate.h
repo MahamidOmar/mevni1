@@ -34,7 +34,7 @@ public:
         else{
             if (first_movie->rate == second_movie->rate)
             {
-                if(first_movie->views< second_movie->views){
+                if(first_movie->views < second_movie->views){
                     return true;
                 } else if(first_movie->views == second_movie->views){
                     if (first_movie->movie_id > second_movie->movie_id)
@@ -52,7 +52,7 @@ public:
         else{
             if (first_movie->rate == second_movie->rate)
             {
-                if(first_movie->views> second_movie->views){
+                if(first_movie->views > second_movie->views){
                     return true;
                 } else if(first_movie->views == second_movie->views){
                     if (first_movie->movie_id < second_movie->movie_id)

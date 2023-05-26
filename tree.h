@@ -629,6 +629,7 @@ Treestatus AVLtree<T, K>::removeAVLnode(AVLnode<T, K> *todelete) {
         todelete->setLeft(nullptr);
         todelete->setRight(nullptr);
         todelete->setParent(nullptr);
+        this->treesize--;
         delete todelete;
         ///Find the next biggest in Inorder Visit
         ///we need to swap the two AVLnodes

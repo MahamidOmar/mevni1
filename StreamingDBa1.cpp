@@ -297,7 +297,10 @@ StatusType streaming_database::user_watch(int userId, int movieId) {
     shared_ptr<MovieByRate> check_movie_by_rate(
             new MovieByRate(curr_movie->key->genre, movieId, curr_movie->key->is_vip, curr_movie->key->rate,
                             curr_movie->key->views,curr_movie->key->num_rates,curr_movie->key->sum_rates));
-    all_movies_by_rate->deleteKey(check_movie_by_rate);
+    shared_ptr<MovieByRate> to_delete(
+            new MovieByRate(curr_movie->key->genre, movieId, curr_movie->key->is_vip, curr_movie->key->rate,
+                            curr_movie->key->views,curr_movie->key->num_rates,curr_movie->key->sum_rates));
+    all_movies_by_rate->deleteKey(to_delete);
 
 //    shared_ptr<MovieByRate> updated(
 //            new MovieByRate(curr_movie->key->genre, movieId, curr_movie->key->is_vip, curr_movie->key->rate,
@@ -318,7 +321,7 @@ StatusType streaming_database::user_watch(int userId, int movieId) {
             curr_user->key->viewers[0]++;
 
             //copy_movie=check_movie_by_rate;
-            comedy_movies_by_rate->deleteKey(check_movie_by_rate);
+            comedy_movies_by_rate->deleteKey(to_delete);
             check_movie_by_rate->views++;
 //            updated->views++;
             comedy_movies_by_rate->insert(check_movie_by_rate,check_movie_by_rate);
@@ -331,7 +334,7 @@ StatusType streaming_database::user_watch(int userId, int movieId) {
             curr_user->key->viewers[1]++;
 
             //copy_movie=check_movie_by_rate;
-            drama_movies_by_rate->deleteKey(check_movie_by_rate);
+            drama_movies_by_rate->deleteKey(to_delete);
             check_movie_by_rate->views++;
 //            updated->views++;
             drama_movies_by_rate->insert(check_movie_by_rate,check_movie_by_rate);
@@ -344,7 +347,7 @@ StatusType streaming_database::user_watch(int userId, int movieId) {
             curr_user->key->viewers[2]++;
 
             //copy_movie=check_movie_by_rate;
-            action_movies_by_rate->deleteKey(check_movie_by_rate);
+            action_movies_by_rate->deleteKey(to_delete);
             check_movie_by_rate->views++;
 //            updated->views++;
             action_movies_by_rate->insert(check_movie_by_rate,check_movie_by_rate);
@@ -358,7 +361,7 @@ StatusType streaming_database::user_watch(int userId, int movieId) {
             curr_user->key->viewers[3]++;
 
             //copy_movie=check_movie_by_rate;
-            fantasy_movies_by_rate->deleteKey(check_movie_by_rate);
+            fantasy_movies_by_rate->deleteKey(to_delete);
             check_movie_by_rate->views++;
 //            updated->views++;
             fantasy_movies_by_rate->insert(check_movie_by_rate,check_movie_by_rate);
@@ -401,7 +404,10 @@ StatusType streaming_database::group_watch(int groupId, int movieId) {
     shared_ptr<MovieByRate> check_movie_by_rate(
             new MovieByRate(curr_movie->key->genre, movieId, curr_movie->key->is_vip, curr_movie->key->rate,
                             curr_movie->key->views,curr_movie->key->num_rates,curr_movie->key->sum_rates));
-    all_movies_by_rate->deleteKey(check_movie_by_rate);
+    shared_ptr<MovieByRate> to_delete(
+            new MovieByRate(curr_movie->key->genre, movieId, curr_movie->key->is_vip, curr_movie->key->rate,
+                            curr_movie->key->views,curr_movie->key->num_rates,curr_movie->key->sum_rates));
+    all_movies_by_rate->deleteKey(to_delete);
     curr_movie->key->views += curr_group->key->users_tree->treesize;
 
 
@@ -410,7 +416,7 @@ StatusType streaming_database::group_watch(int groupId, int movieId) {
             curr_group->key->viewers[0]++;
             curr_group->key->sum_of_all_viewers[0] += curr_group->key->users_tree->treesize;
 
-            comedy_movies_by_rate->deleteKey(check_movie_by_rate);
+            comedy_movies_by_rate->deleteKey(to_delete);
             check_movie_by_rate->views += curr_group->key->users_tree->treesize;
             comedy_movies_by_rate->insert(check_movie_by_rate,check_movie_by_rate);
             break;
@@ -418,7 +424,7 @@ StatusType streaming_database::group_watch(int groupId, int movieId) {
             curr_group->key->viewers[1]++;
             curr_group->key->sum_of_all_viewers[1]+=curr_group->key->users_tree->treesize;
 
-            drama_movies_by_rate->deleteKey(check_movie_by_rate);
+            drama_movies_by_rate->deleteKey(to_delete);
             check_movie_by_rate->views+=curr_group->key->users_tree->treesize;
             drama_movies_by_rate->insert(check_movie_by_rate,check_movie_by_rate);
             break;
@@ -426,7 +432,7 @@ StatusType streaming_database::group_watch(int groupId, int movieId) {
             curr_group->key->viewers[2]++;
             curr_group->key->sum_of_all_viewers[2]+=curr_group->key->users_tree->treesize;
 
-            action_movies_by_rate->deleteKey(check_movie_by_rate);
+            action_movies_by_rate->deleteKey(to_delete);
             check_movie_by_rate->views+=curr_group->key->users_tree->treesize;
             action_movies_by_rate->insert(check_movie_by_rate,check_movie_by_rate);
             break;
@@ -434,7 +440,7 @@ StatusType streaming_database::group_watch(int groupId, int movieId) {
             curr_group->key->viewers[3]++;
             curr_group->key->sum_of_all_viewers[3]+=curr_group->key->users_tree->treesize;
 
-            fantasy_movies_by_rate->deleteKey(check_movie_by_rate);
+            fantasy_movies_by_rate->deleteKey(to_delete);
             check_movie_by_rate->views+=curr_group->key->users_tree->treesize;
             fantasy_movies_by_rate->insert(check_movie_by_rate,check_movie_by_rate);
             break;
