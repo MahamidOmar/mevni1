@@ -156,7 +156,7 @@ StatusType streaming_database::remove_user(int userId) {
     if (!all_users_tree->isContain(check_user)) {
         return StatusType::FAILURE;
     }
-    if (all_users_tree->find(check_user)->key->group_id!=0){
+    if (all_users_tree->find(check_user)->key->group_id != 0){
         shared_ptr<Group> new_group(new Group(all_users_tree->find(check_user)->key->group_id));
         if (!new_group) {
             return StatusType::ALLOCATION_ERROR;
@@ -165,11 +165,11 @@ StatusType streaming_database::remove_user(int userId) {
             not_empty_groups_tree->find(new_group)->key->num_vip_users--;
         }
         for (int i = 0; i < NUM_MOVIES_TYPES; ++i) {
-            not_empty_groups_tree->find(new_group)->key->sum_of_all_viewers[i]-=check_user->late_movies_group[i];
+            not_empty_groups_tree->find(new_group)->key->sum_of_all_viewers[i] -= (check_user->viewers[i] + not_empty_groups_tree->find(new_group)->key->viewers[i]);
         }
 
         not_empty_groups_tree->find(new_group)->key->users_tree->deleteKey(check_user);
-        if (not_empty_groups_tree->find(new_group)->key->users_tree->treesize==0){
+        if (not_empty_groups_tree->find(new_group)->key->users_tree->treesize == 0){
             not_empty_groups_tree->deleteKey(new_group);
         }
     }
@@ -197,7 +197,7 @@ static void updateGroupIdToUsers(AVLnode<shared_ptr<User>,shared_ptr<User>>* nod
         return;
     }
     updateGroupIdToUsers(node->left_son,group);
-    node->key->group_id=0;
+    node->key->group_id = 0;
     for (int i = 0; i < NUM_MOVIES_TYPES; ++i) {
 //        node->key->late_movies_group[i]+=group->viewers[i];
 //        node->key->viewers[i]=node->key->late_movies_group[i];
@@ -249,7 +249,7 @@ StatusType streaming_database::add_user_to_group(int userId, int groupId) {
     }
     AVLnode<shared_ptr<User>,shared_ptr<User>>* current_user = all_users_tree->find(check_user);
     AVLnode<shared_ptr<Group>,shared_ptr<Group>>* cur_gr=all_groups_tree->find(new_group);
-    if (all_groups_tree->find(new_group)->key->users_tree->treesize==0){
+    if (all_groups_tree->find(new_group)->key->users_tree->treesize == 0){
         this->not_empty_groups_tree->insert(all_groups_tree->find(new_group)->key,all_groups_tree->find(new_group)->key);
     }
     this->not_empty_groups_tree->find(new_group)->key->users_tree->insert(current_user->key,current_user->key);
@@ -257,7 +257,7 @@ StatusType streaming_database::add_user_to_group(int userId, int groupId) {
 //        current_user->key->late_movies_group[i]=current_user->key->viewers[i];
 //        this->not_empty_groups_tree->find(new_group)->key->sum_of_all_viewers[i]+=current_user->key->late_movies_group[i];
 
-        this->not_empty_groups_tree->find(new_group)->key->sum_of_all_viewers[i]+=current_user->key->viewers[i];
+        this->not_empty_groups_tree->find(new_group)->key->sum_of_all_viewers[i] += current_user->key->viewers[i];
 
         current_user->key->viewers[i] -= this->not_empty_groups_tree->find(new_group)->key->viewers[i];
 
@@ -266,7 +266,7 @@ StatusType streaming_database::add_user_to_group(int userId, int groupId) {
     if (current_user->key->is_vip){
         this->not_empty_groups_tree->find(new_group)->key->num_vip_users++;
     }
-    current_user->key->group_id=groupId;
+    current_user->key->group_id = groupId;
     return StatusType::SUCCESS;
 }
 
@@ -298,15 +298,16 @@ StatusType streaming_database::user_watch(int userId, int movieId) {
                             curr_movie->key->views,curr_movie->key->num_rates,curr_movie->key->sum_rates));
     all_movies_by_rate->deleteKey(check_movie_by_rate);
 
-    shared_ptr<MovieByRate> updated(
-            new MovieByRate(curr_movie->key->genre, movieId, curr_movie->key->is_vip, curr_movie->key->rate,
-                            curr_movie->key->views,curr_movie->key->num_rates,curr_movie->key->sum_rates));
+//    shared_ptr<MovieByRate> updated(
+//            new MovieByRate(curr_movie->key->genre, movieId, curr_movie->key->is_vip, curr_movie->key->rate,
+//                            curr_movie->key->views,curr_movie->key->num_rates,curr_movie->key->sum_rates));
     curr_movie->key->views++;
     shared_ptr<Group> check_group(new Group(curr_user->key->group_id));
     AVLnode<shared_ptr<Group>,shared_ptr<Group>>* curr_node=NULL;
     if (curr_user->key->group_id!=0){
         curr_node=not_empty_groups_tree->find(check_group);
     }
+
     switch (curr_movie->key->genre) {
         case Genre::COMEDY:
             if (curr_node){
@@ -317,8 +318,9 @@ StatusType streaming_database::user_watch(int userId, int movieId) {
 
             //copy_movie=check_movie_by_rate;
             comedy_movies_by_rate->deleteKey(check_movie_by_rate);
-            updated->views++;
-            comedy_movies_by_rate->insert(updated,updated);
+            check_movie_by_rate->views++;
+//            updated->views++;
+            comedy_movies_by_rate->insert(check_movie_by_rate,check_movie_by_rate);
             break;
         case Genre::DRAMA:
             if (curr_node){
@@ -329,8 +331,9 @@ StatusType streaming_database::user_watch(int userId, int movieId) {
 
             //copy_movie=check_movie_by_rate;
             drama_movies_by_rate->deleteKey(check_movie_by_rate);
-            updated->views++;
-            drama_movies_by_rate->insert(updated,updated);
+            check_movie_by_rate->views++;
+//            updated->views++;
+            drama_movies_by_rate->insert(check_movie_by_rate,check_movie_by_rate);
             break;
         case Genre::ACTION:
             if (curr_node){
@@ -341,8 +344,9 @@ StatusType streaming_database::user_watch(int userId, int movieId) {
 
             //copy_movie=check_movie_by_rate;
             action_movies_by_rate->deleteKey(check_movie_by_rate);
-            updated->views++;
-            action_movies_by_rate->insert(updated,updated);
+            check_movie_by_rate->views++;
+//            updated->views++;
+            action_movies_by_rate->insert(check_movie_by_rate,check_movie_by_rate);
             break;
         case Genre::FANTASY:
             if (curr_node){
@@ -354,13 +358,15 @@ StatusType streaming_database::user_watch(int userId, int movieId) {
 
             //copy_movie=check_movie_by_rate;
             fantasy_movies_by_rate->deleteKey(check_movie_by_rate);
-            updated->views++;
-            fantasy_movies_by_rate->insert(updated,updated);
+            check_movie_by_rate->views++;
+//            updated->views++;
+            fantasy_movies_by_rate->insert(check_movie_by_rate,check_movie_by_rate);
             break;
         default:
+            check_movie_by_rate->views++;
             break;
     }
-    check_movie_by_rate->views++;
+//    check_movie_by_rate->views++;
     all_movies_by_rate->insert(check_movie_by_rate,check_movie_by_rate);
     return StatusType::SUCCESS;
 }
@@ -629,8 +635,8 @@ StatusType streaming_database::rate_movie(int userId, int movieId, int rating) {
 static int getMaxIndex(int arr[]){
     int max=0;
     for (int i = 0; i < NUM_MOVIES_TYPES; ++i) {
-        if (arr[i]>arr[max]){
-            max=i;
+        if (arr[i] > arr[max]){
+            max = i;
         }
     }
     return max;
@@ -650,7 +656,7 @@ output_t<int> streaming_database::get_group_recommendation(int groupId) {
     if (!not_empty_groups_tree->isContain(check_group)){
         return StatusType::FAILURE;
     }
-    AVLnode<shared_ptr<Group>,shared_ptr<Group>>* curr_group= not_empty_groups_tree->find(check_group);
+    AVLnode<shared_ptr<Group>,shared_ptr<Group>>* curr_group = not_empty_groups_tree->find(check_group);
     int max_index= getMaxIndex(curr_group->key->sum_of_all_viewers);
     switch (max_index) {
         case 0:
