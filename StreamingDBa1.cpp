@@ -156,16 +156,17 @@ StatusType streaming_database::remove_user(int userId) {
     if (!all_users_tree->isContain(check_user)) {
         return StatusType::FAILURE;
     }
+    AVLnode<shared_ptr<User>,shared_ptr<User>>* current_user = all_users_tree->find(check_user);
     if (all_users_tree->find(check_user)->key->group_id != 0){
         shared_ptr<Group> new_group(new Group(all_users_tree->find(check_user)->key->group_id));
         if (!new_group) {
             return StatusType::ALLOCATION_ERROR;
         }
-        if (all_users_tree->find(check_user)->key->is_vip){
+        if ((current_user)->key->is_vip){
             not_empty_groups_tree->find(new_group)->key->num_vip_users--;
         }
         for (int i = 0; i < NUM_MOVIES_TYPES; ++i) {
-            not_empty_groups_tree->find(new_group)->key->sum_of_all_viewers[i] -= (check_user->viewers[i] + not_empty_groups_tree->find(new_group)->key->viewers[i]);
+            not_empty_groups_tree->find(new_group)->key->sum_of_all_viewers[i] -= (current_user->key->viewers[i] + not_empty_groups_tree->find(new_group)->key->viewers[i]);
         }
 
         not_empty_groups_tree->find(new_group)->key->users_tree->deleteKey(check_user);
@@ -394,7 +395,7 @@ StatusType streaming_database::group_watch(int groupId, int movieId) {
     }
     AVLnode<shared_ptr<MovieById>,shared_ptr<MovieById>>* curr_movie = all_movies_by_id->find(check_movie);
     AVLnode<shared_ptr<Group>,shared_ptr<Group>>* curr_group = not_empty_groups_tree->find(check_group);
-    if (curr_movie->key->is_vip && curr_group->key->num_vip_users==0) {
+    if (curr_movie->key->is_vip && curr_group->key->num_vip_users == 0) {
         return StatusType::FAILURE;
     }
     shared_ptr<MovieByRate> check_movie_by_rate(
@@ -657,25 +658,25 @@ output_t<int> streaming_database::get_group_recommendation(int groupId) {
         return StatusType::FAILURE;
     }
     AVLnode<shared_ptr<Group>,shared_ptr<Group>>* curr_group = not_empty_groups_tree->find(check_group);
-    int max_index= getMaxIndex(curr_group->key->sum_of_all_viewers);
+    int max_index = getMaxIndex(curr_group->key->sum_of_all_viewers);
     switch (max_index) {
         case 0:
-            if (comedy_movies_by_rate->treesize==0){
+            if (comedy_movies_by_rate->treesize == 0){
                 return StatusType::FAILURE;
             }
             return comedy_movies_by_rate->getMaxNode()->movie_id;
         case 1:
-            if (drama_movies_by_rate->treesize==0){
+            if (drama_movies_by_rate->treesize == 0){
                 return StatusType::FAILURE;
             }
             return drama_movies_by_rate->getMaxNode()->movie_id;
         case 2:
-            if (action_movies_by_rate->treesize==0){
+            if (action_movies_by_rate->treesize == 0){
                 return StatusType::FAILURE;
             }
             return action_movies_by_rate->getMaxNode()->movie_id;
         case 3:
-            if (fantasy_movies_by_rate->treesize==0){
+            if (fantasy_movies_by_rate->treesize == 0){
                 return StatusType::FAILURE;
             }
             return fantasy_movies_by_rate->getMaxNode()->movie_id;
