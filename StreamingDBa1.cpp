@@ -16,7 +16,7 @@ streaming_database::streaming_database() {
     }
     // TODO: Your code goes here
 }
-
+//
 streaming_database::~streaming_database() {
     delete all_users_tree;
     delete all_groups_tree;
